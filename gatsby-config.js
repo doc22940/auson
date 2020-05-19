@@ -3,6 +3,7 @@ module.exports = {
     title: `AUSON == LOVE`,
   },
   plugins: [
+    `gatsby-plugin-react-helmet`,
     `gatsby-plugin-favicon`,
     `gatsby-plugin-sharp`,
     `gatsby-transformer-sharp`,

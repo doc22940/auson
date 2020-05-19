@@ -7,11 +7,21 @@ export default function Home({ data }) {
   return (
     <Layout isIndex={true}>
       <div>
-        <h1><span role="img" aria-label="mailbox">📬</span> Posts</h1>
+        <h1>
+          <span role="img" aria-label="mailbox">
+            📬
+          </span>{" "}
+          Posts
+        </h1>
         <ArticleList edges={data.posts.edges} />
         <Link to={`/posts`}>All posts...</Link>
       </div>
-      <h1><span role="img" aria-label="letter">💌</span> Letters</h1>
+      <h1>
+        <span role="img" aria-label="letter">
+          💌
+        </span>{" "}
+        Letters
+      </h1>
       <ArticleList edges={data.letters.edges} />
       <Link to={`/letters`}>All letters...</Link>
     </Layout>

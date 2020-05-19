@@ -1,4 +1,5 @@
 import React from "react";
+import { Helmet } from "react-helmet";
 import { css } from "@emotion/core";
 import { Link, useStaticQuery } from "gatsby";
 
@@ -26,6 +27,10 @@ export default function Layout({ children, isIndex }) {
         padding-top: ${rhythm(1.5)};
       `}
     >
+      <Helmet>
+        <meta charSet="utf-8" />
+        <title>AUSON == LOVE</title>
+      </Helmet>
       <Link to={`/`}>
         <h3
           css={css`
