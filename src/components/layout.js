@@ -47,7 +47,7 @@ export default function Layout({ children, isIndex }) {
       </Link>
       {isIndex && (
         <a
-          href={`https://auson.love/static/original`}
+          href={`https://nelsontky.github.io/auson_original/`}
           target={`_blank`}
           rel={`noopener noreferrer`}
           css={css`
