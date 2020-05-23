@@ -24,7 +24,7 @@ export default function ArticleList({ edges }) {
               color: #555;
             `}
           >
-            — {node.frontmatter.date}
+            — {node.frontmatter.date.replace(",", "")}
           </span>
         </h3>
         {node.frontmatter.by && <p>By: {node.frontmatter.by}</p>}

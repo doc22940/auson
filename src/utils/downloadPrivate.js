@@ -1,10 +1,18 @@
 import getFirebase from "../firebase";
 
 const axios = require("axios");
-const unified = require("unified");
-const markdown = require("remark-parse");
+const extract = require("remark-extract-frontmatter");
+const frontmatter = require("remark-frontmatter");
 const html = require("remark-html");
-var frontmatter = require("remark-frontmatter");
+const markdown = require("remark-parse");
+const unified = require("unified");
+const yaml = require("yaml").parse;
+
+const dateOptions = {
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+};
 
 const storageRef = getFirebase().storage().ref();
 
@@ -23,7 +31,7 @@ export async function getDownloadUrls() {
 export async function getContents() {
   const urls = await getDownloadUrls();
 
-  let texts = [];
+  let nodes = [];
   for (let url of urls) {
     const res = await axios({
       url,
@@ -34,13 +42,31 @@ export async function getContents() {
 
     unified()
       .use(markdown)
-      .use(frontmatter, ["yaml", "toml"])
       .use(html)
+      .use(frontmatter)
+      .use(extract, { yaml: yaml })
       .process(text, function (err, file) {
-        if (err) throw err;
-        console.log(String(file));
-        texts.push(String(file));
+        const html = String(file);
+
+        const dateParts = file.data.date.split("-");
+        const date = new Date(
+          dateParts[0],
+          dateParts[1] - 1,
+          dateParts[2]
+        ).toLocaleString("en-GB", dateOptions);
+
+        const frontmatter = {
+          ...file.data,
+          date,
+        };
+        const excerpt = String(file)
+          .replace(/<[^>]*>?/gm, "")
+          .split(" ")
+          .slice(0, 30)
+          .join(" ");
+
+        nodes.push({ node: { frontmatter, excerpt, html } });
       });
   }
-  return texts;
+  return nodes;
 }
