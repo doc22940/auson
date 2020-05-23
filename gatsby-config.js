@@ -3,6 +3,10 @@ module.exports = {
     title: `AUSON == LOVE`,
   },
   plugins: [
+    {
+      resolve: `gatsby-plugin-create-client-paths`,
+      options: { prefixes: [`/private/*`] },
+    },
     `gatsby-plugin-react-helmet`,
     `gatsby-plugin-favicon`,
     `gatsby-plugin-sharp`,

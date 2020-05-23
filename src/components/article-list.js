@@ -4,8 +4,8 @@ import { Link } from "gatsby";
 import { rhythm } from "../utils/typography";
 
 export default function ArticleList({ edges }) {
-  return edges.map(({ node }) => (
-    <div key={node.id}>
+  return edges.map(({ node }, i) => (
+    <div key={i}>
       <Link
         to={node.fields.slug}
         css={css`

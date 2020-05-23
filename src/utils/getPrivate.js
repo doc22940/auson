@@ -16,23 +16,26 @@ const dateOptions = {
 
 const storageRef = getFirebase().storage().ref();
 
-export async function getDownloadUrls() {
+async function getPosts() {
   const res = await storageRef.listAll();
 
-  let urls = [];
+  let posts = [];
   for (let file of res.items) {
     const url = await file.getDownloadURL();
-    urls.push(url);
+    const metadata = await file.getMetadata();
+    const name = metadata.name.replace(".md", "");
+
+    posts.push({ url, name });
   }
 
-  return urls;
+  return posts;
 }
 
-export async function getContents() {
-  const urls = await getDownloadUrls();
+export default async function getPrivate() {
+  const posts = await getPosts();
 
-  let nodes = [];
-  for (let url of urls) {
+  let edges = [];
+  for (let { url, name } of posts) {
     const res = await axios({
       url,
       responseType: "blob",
@@ -59,14 +62,24 @@ export async function getContents() {
           ...file.data,
           date,
         };
-        const excerpt = String(file)
-          .replace(/<[^>]*>?/gm, "")
-          .split(" ")
-          .slice(0, 30)
-          .join(" ");
 
-        nodes.push({ node: { frontmatter, excerpt, html } });
+        const excerpt =
+          String(file)
+            .replace(/<[^>]*>?/gm, "") // remove html tags
+            .split(" ")
+            .slice(0, 30)
+            .join(" ") + "...";
+
+        edges.push({
+          node: {
+            frontmatter,
+            excerpt,
+            html,
+            fields: { slug: `private/${name}` },
+          },
+        });
       });
   }
-  return nodes;
+
+  return edges;
 }

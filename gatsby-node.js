@@ -15,7 +15,7 @@ exports.onCreateNode = ({ node, getNode, actions }) => {
   }
 };
 
-exports.createPages = async ({ graphql, actions }) => {
+exports.createPages = async ({ graphql, actions, page }) => {
   const { createPage } = actions;
 
   // Create posts/letters pages

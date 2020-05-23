@@ -1,30 +1,38 @@
-import React, { useEffect, useState } from "react";
-import { Helmet } from "react-helmet";
-import { graphql, Link } from "gatsby";
-import Layout from "../components/layout";
-import ForUsPreview from '../components/for-us-preview';
-import ArticleList from "../components/article-list";
 import * as firebase from "firebase/app";
 import * as firebaseui from "firebaseui";
+import ArticleList from "../components/article-list";
+import Layout from "../components/layout";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
+import { Helmet } from "react-helmet";
+import { graphql, Link } from "gatsby";
 
 import "../firebase";
+import getPrivate from "../utils/getPrivate";
+import { setUser, setPrivateEdges } from "../state/app";
 
 export default function Home({ data }) {
-  const [user, setUser] = useState(null);
+  const dispatch = useDispatch();
+  const { user, privateEdges } = useSelector(state => state);
 
   useEffect(() => {
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
 
-    ui.start("#firebaseui-auth-container", {
-      signInSuccessUrl:
-        process.env.NODE_ENV === "development"
-          ? "http://localhost:8000"
-          : "https://auson.love",
-      signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID],
-    });
+    if (!user) {
+      ui.start("#firebaseui-auth-container", {
+        signInSuccessUrl:
+          process.env.NODE_ENV === "development"
+            ? "http://localhost:8000"
+            : "https://auson.love",
+        signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID],
+      });
+    }
 
     firebase.auth().onAuthStateChanged(user => {
-      setUser(user);
+      dispatch(setUser(true));
+      getPrivate().then(privateEdges =>
+        dispatch(setPrivateEdges(privateEdges))
+      );
     });
 
     return () => {
@@ -67,7 +75,7 @@ export default function Home({ data }) {
         For Us
       </h1>
       {!user && <div id="firebaseui-auth-container"></div>}
-      <ForUsPreview />
+      {privateEdges && <ArticleList edges={privateEdges} />}
     </Layout>
   );
 }
