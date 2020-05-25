@@ -40,7 +40,7 @@ export default function Home({ data }) {
         dispatch(setPrivateEdges(privateEdges));
       });
     }
-  }, [isLoggedIn, privateEdges]);
+  }, [isLoggedIn, privateEdges, dispatch]);
 
   return (
     <Layout isIndex={true}>
