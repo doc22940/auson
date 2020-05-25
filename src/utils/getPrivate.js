@@ -90,7 +90,10 @@ export async function getAllPrivate() {
     edges.push(edge);
   }
 
-  return edges;
+  return edges.sort(
+    (e1, e2) =>
+      new Date(e2.node.frontmatter.date) - new Date(e1.node.frontmatter.date)
+  );
 }
 
 export async function getPrivateArticle(fileName) {
