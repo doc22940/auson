@@ -2,43 +2,39 @@ import * as firebase from "firebase/app";
 import * as firebaseui from "firebaseui";
 import ArticleList from "../components/article-list";
 import Layout from "../components/layout";
-import React, { useEffect } from "react";
-import { useSelector, useDispatch } from "react-redux";
+import React, { useEffect, useState } from "react";
 import { Helmet } from "react-helmet";
 import { graphql, Link } from "gatsby";
 
 import "../firebase";
-import getPrivate from "../utils/getPrivate";
-import { setUser, setPrivateEdges } from "../state/app";
+import { getAllPrivate } from "../utils/getPrivate";
+import useLoginStatus from "../utils/useLoginStatus";
 
 export default function Home({ data }) {
-  const dispatch = useDispatch();
-  const { user, privateEdges } = useSelector(state => state);
+  const isLoggedIn = useLoginStatus();
+  const [privateEdges, setPrivateEdges] = useState(null);
 
   useEffect(() => {
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
 
-    if (!user) {
-      ui.start("#firebaseui-auth-container", {
-        signInSuccessUrl:
-          process.env.NODE_ENV === "development"
-            ? "http://localhost:8000"
-            : "https://auson.love",
-        signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID],
-      });
-    }
-
-    firebase.auth().onAuthStateChanged(user => {
-      dispatch(setUser(true));
-      getPrivate().then(privateEdges =>
-        dispatch(setPrivateEdges(privateEdges))
-      );
+    ui.start("#firebaseui-auth-container", {
+      signInSuccessUrl:
+        process.env.NODE_ENV === "development"
+          ? "http://localhost:8000/#for-us"
+          : "https://auson.love/#for-us",
+      signInOptions: [firebase.auth.GoogleAuthProvider.PROVIDER_ID],
     });
 
     return () => {
       ui.delete();
     };
   }, []);
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      getAllPrivate().then(privateEdges => setPrivateEdges(privateEdges));
+    }
+  }, [isLoggedIn]);
 
   return (
     <Layout isIndex={true}>
@@ -68,13 +64,17 @@ export default function Home({ data }) {
       </h1>
       <ArticleList edges={data.letters.edges} />
       <Link to={`/letters`}>All letters...</Link>
-      <h1>
+      <h1 id="for-us">
         <span role="img" aria-label="letter">
           🙈
         </span>{" "}
         For Us
       </h1>
-      {!user && <div id="firebaseui-auth-container"></div>}
+      {isLoggedIn == null && <div id="firebaseui-auth-container"></div>}
+      {isLoggedIn === false && (
+        <p>You do not have sufficient permissions to view this section!</p>
+      )}
+      {isLoggedIn && !privateEdges && <p>Loading...</p>}
       {privateEdges && <ArticleList edges={privateEdges} />}
     </Layout>
   );

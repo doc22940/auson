@@ -14,9 +14,8 @@ const dateOptions = {
   day: "numeric",
 };
 
-const storageRef = getFirebase().storage().ref();
-
 async function getPosts() {
+  const storageRef = getFirebase().storage().ref();
   const res = await storageRef.listAll();
 
   let posts = [];
@@ -31,24 +30,18 @@ async function getPosts() {
   return posts;
 }
 
-export default async function getPrivate() {
-  const posts = await getPosts();
-
-  let edges = [];
-  for (let { url, name } of posts) {
-    const res = await axios({
-      url,
-      responseType: "blob",
-    });
-
-    const text = await res.data.text();
-
+function parseMarkdown(text, name) {
+  return new Promise((resolve, reject) => {
     unified()
       .use(markdown)
       .use(html)
       .use(frontmatter)
       .use(extract, { yaml: yaml })
-      .process(text, function (err, file) {
+      .process(text, (err, file) => {
+        if (err) {
+          reject(err);
+        }
+
         const html = String(file);
 
         const dateParts = file.data.date.split("-");
@@ -70,7 +63,7 @@ export default async function getPrivate() {
             .slice(0, 30)
             .join(" ") + "...";
 
-        edges.push({
+        resolve({
           node: {
             frontmatter,
             excerpt,
@@ -79,7 +72,42 @@ export default async function getPrivate() {
           },
         });
       });
+  });
+}
+
+export async function getAllPrivate() {
+  const posts = await getPosts();
+
+  let edges = [];
+  for (let { url, name } of posts) {
+    const res = await axios({
+      url,
+      responseType: "blob",
+    });
+
+    const text = await res.data.text();
+    const edge = await parseMarkdown(text, name);
+    edges.push(edge);
   }
 
   return edges;
+}
+
+export async function getPrivateArticle(fileName) {
+  const storageRef = getFirebase().storage().ref();
+  const fileRef = storageRef.child(fileName + ".md");
+  const url = await fileRef.getDownloadURL();
+  const metadata = await fileRef.getMetadata();
+  const name = metadata.name.replace(".md", "");
+
+  const res = await axios({
+    url,
+    responseType: "blob",
+  });
+
+  const text = await res.data.text();
+
+  const edge = await parseMarkdown(text, name);
+
+  return { markdownRemark: edge.node };
 }
