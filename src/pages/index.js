@@ -2,17 +2,21 @@ import * as firebase from "firebase/app";
 import * as firebaseui from "firebaseui";
 import ArticleList from "../components/article-list";
 import Layout from "../components/layout";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { Helmet } from "react-helmet";
 import { graphql, Link } from "gatsby";
 
 import "../firebase";
-import { getAllPrivate } from "../utils/getPrivate";
 import useLoginStatus from "../utils/useLoginStatus";
+import { getAllPrivate } from "../utils/getPrivate";
+import { setPrivateEdges } from "../state/app";
 
 export default function Home({ data }) {
+  const dispatch = useDispatch();
+  const privateEdges = useSelector(state => state.privateEdges);
+
   const isLoggedIn = useLoginStatus();
-  const [privateEdges, setPrivateEdges] = useState(null);
 
   useEffect(() => {
     const ui = new firebaseui.auth.AuthUI(firebase.auth());
@@ -31,10 +35,12 @@ export default function Home({ data }) {
   }, []);
 
   useEffect(() => {
-    if (isLoggedIn) {
-      getAllPrivate().then(privateEdges => setPrivateEdges(privateEdges));
+    if (isLoggedIn && !privateEdges) {
+      getAllPrivate().then(privateEdges => {
+        dispatch(setPrivateEdges(privateEdges));
+      });
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, privateEdges]);
 
   return (
     <Layout isIndex={true}>
