@@ -10,7 +10,7 @@ export default function useLoginStatus() {
     firebase.auth().onAuthStateChanged(user => {
       if (user != null && allowedEmails[user.email]) {
         setIsLoggedIn(true);
-      } else {
+      } else if (user != null) {
         setIsLoggedIn(false);
       }
     });
