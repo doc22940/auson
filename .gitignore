@@ -71,4 +71,4 @@ yarn-error.log
 # emails
 src/allowedEmails.json
 
-src/private/
+private/
