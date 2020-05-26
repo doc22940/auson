@@ -16,9 +16,11 @@ const PrivateRoute = ({ location }) => {
     if (isLoggedIn === false && location.pathname !== `/404`) {
       navigate("/404");
     } else if (isLoggedIn === true) {
-      getPrivateArticle(name)
-        .then(data => setData(data))
-        .catch(() => navigate("/404"));
+      if (!data) {
+        getPrivateArticle(name)
+          .then(data => setData(data))
+          .catch(() => navigate("/404"));
+      }
     }
   });
 
