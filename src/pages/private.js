@@ -15,7 +15,7 @@ export default () => {
 
 function Default() {
   if (typeof window !== "undefined") {
-    navigate("/");
+    navigate("/#for-us");
   }
   return null;
 }
